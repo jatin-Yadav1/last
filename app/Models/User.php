@@ -2,47 +2,62 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class User extends Authenticatable
 {
-    /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable;
+    use HasFactory, Notifiable, SoftDeletes;
 
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var list<string>
-     */
     protected $fillable = [
-        'name',
+        'first_name',
+        'last_name',
         'email',
+        'username',
+        'email_verified_at',
+        'alternate_email',
+        'alternate_email_verified_at',
+        'account_number',
         'password',
+        'number',
+        'number_verified_at',
+        'alternate_number',
+        'alternate_number_verified_at',
+        'logo',
+        'image',
+        'status',
+        'heading',
+        'bio',
+        'full_address'
     ];
 
-    /**
-     * The attributes that should be hidden for serialization.
-     *
-     * @var list<string>
-     */
     protected $hidden = [
         'password',
         'remember_token',
     ];
 
-    /**
-     * Get the attributes that should be cast.
-     *
-     * @return array<string, string>
-     */
-    protected function casts(): array
+    protected $casts = [
+        'email_verified_at' => 'datetime',
+        'alternate_email_verified_at' => 'datetime',
+        'number_verified_at' => 'datetime',
+        'alternate_number_verified_at' => 'datetime',
+        'status' => 'boolean',
+    ];
+
+    public function getFullNameAttribute()
     {
-        return [
-            'email_verified_at' => 'datetime',
-            'password' => 'hashed',
-        ];
+        return "{$this->first_name} {$this->last_name}";
+    }
+
+    public function getLogoAttribute($value)
+    {
+        return $value ? asset('storage/' . $value) : asset('assets/images/image.png');
+    }
+
+    public function getImageAttribute($value)
+    {
+        return $value ? asset('storage/' . $value) : asset('assets/images/image.png');
     }
 }
