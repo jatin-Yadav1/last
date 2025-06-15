@@ -48,11 +48,15 @@ class UserSkillController extends Controller
                 ->addIndexColumn()
                 ->addColumn('status', function ($row) {
                     $checked = $row->status ? 'checked' : '';
-                    $editUrl = route('skill.ajax.update');
-                    // $editUrl = route('skills.update', $row->id);
+                    $editUrl = route('skill.ajax.update'); // This should be a POST/PUT route
+
                     return '
                         <div class="form-check form-switch">
-                            <input class="form-check-input toggle-status" type="checkbox" data-action="' . $editUrl . '" data-data="' . $row . '" data-id="' . $row->id . '" ' . $checked . '>
+                            <input class="form-check-input toggle-status"
+                                type="checkbox"
+                                data-action="' . $editUrl . '"
+                                data-id="' . $row->id . '"
+                                ' . $checked . '>
                         </div>
                     ';
                 })
@@ -173,7 +177,7 @@ class UserSkillController extends Controller
         try {
             $skill = $this->skillService->find($id);
             if (!$skill) {
-                return $this->errorResponse("Skill not found.","ERROR", Response::HTTP_NOT_FOUND);
+                return $this->errorResponse("Skill not found.", "ERROR", Response::HTTP_NOT_FOUND);
             }
 
             $this->skillService->delete($skill);

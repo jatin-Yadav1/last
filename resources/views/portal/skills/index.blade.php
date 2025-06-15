@@ -30,6 +30,7 @@
                                         <th>#</th>
                                         <th>Name</th>
                                         <th>Level</th>
+                                        <th>Status</th>
                                         <th>Action</th>
                                     </tr>
                                 </thead>
@@ -118,8 +119,7 @@
                     $('.pre-loader').fadeOut();
                 }
             },
-            columns: [
-                {
+            columns: [{
                     data: 'DT_RowIndex',
                     name: 'DT_RowIndex',
                     orderable: false,
@@ -132,6 +132,10 @@
                 {
                     data: 'level',
                     name: 'level'
+                },
+                {
+                    data: 'status',
+                    name: 'status'
                 },
                 {
                     data: 'action',
@@ -251,6 +255,34 @@
                 }
             });
         });
+
+        $(document).on('change', '.toggle-status', function() {
+            let checkbox = $(this);
+            let id = checkbox.data('id');
+            let url = checkbox.data('action');
+            let status = checkbox.is(':checked') ? 1 : 0;
+
+            $.ajax({
+                url: url,
+                type: 'POST',
+                data: {
+                    _token: "{{ csrf_token() }}",
+                    id: id,
+                    status: status
+                },
+                success: function(res) {
+                    if (res.status) {
+                        toastr.success(res.message || 'Status updated successfully.');
+                    } else {
+                        toastr.error(res.message || 'Failed to update status.');
+                    }
+                },
+                error: function(err) {
+                    toastr.error('Something went wrong.');
+                }
+            });
+        });
+
     });
 </script>
 @endsection

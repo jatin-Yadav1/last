@@ -82,6 +82,8 @@ Route::middleware(['auth'])->prefix('portal')->group(function () {
 
     Route::resource('skills', UserSkillController::class);
     Route::post('skill-update', [UserSkillController::class, 'ajaxUpdate'])->name('skill.ajax.update');
+    // Route::post('/skill/status-update', [UserSkillController::class, 'ajaxUpdateStatus'])->name('skill.ajax.update');
+
 
     Route::resource('educations', UserEducationController::class);
     Route::resource('experiences', UserExperienceController::class);
