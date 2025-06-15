@@ -72,6 +72,7 @@ Route::group(['middleware' => ['guest']], function () {
 });
 
 Route::middleware(['auth'])->prefix('portal')->group(function () {
+    Route::get('/', [DashboardController::class, 'dashboard'])->name('portal.dashboard');
     Route::get('dashboard', [DashboardController::class, 'dashboard'])->name('portal.dashboard');
     Route::get('analytics', [DashboardController::class, 'analytics'])->name('portal.analytics');
     Route::get('profile', [ProfileController::class, 'index'])->name('portal.profile');

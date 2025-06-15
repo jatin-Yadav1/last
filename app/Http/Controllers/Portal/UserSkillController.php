@@ -18,10 +18,12 @@ use Yajra\DataTables\Facades\DataTables;
 class UserSkillController extends Controller
 {
     protected $skillService;
+    protected $userId;
 
     public function __construct(UserSkillService $skillService)
     {
         $this->skillService = $skillService;
+        $this->userId = Auth::check() ? Auth::id() : user_id();
     }
 
     public function index(Request $request)
@@ -29,19 +31,19 @@ class UserSkillController extends Controller
         if ($request->ajax()) {
             // $skills = $this->skillService->list(Auth::id());
             $query = UserSkill::query();
-            $query->where('user_id', Auth::id());
+            $query->where('user_id', $this->userId);
 
             if (isset($request->status)) {
                 $query->where('status', $request->status);
             }
             if (!empty($request->search['value'])) {
                 $search = $request->search['value'];
-                $query->where(function($q) use ($search) {
+                $query->where(function ($q) use ($search) {
                     $q->where('name', 'like', "%{$search}%")
-                    ->orWhere('level', 'like', "%{$search}%");
+                        ->orWhere('level', 'like', "%{$search}%");
                 });
             }
-            
+
             return DataTables::of($query->latest())
                 ->addIndexColumn()
                 ->addColumn('status', function ($row) {
@@ -50,7 +52,7 @@ class UserSkillController extends Controller
                     // $editUrl = route('skills.update', $row->id);
                     return '
                         <div class="form-check form-switch">
-                            <input class="form-check-input toggle-status" type="checkbox" data-action="'.$editUrl.'" data-data="'.$row.'" data-id="' . $row->id . '" ' . $checked . '>
+                            <input class="form-check-input toggle-status" type="checkbox" data-action="' . $editUrl . '" data-data="' . $row . '" data-id="' . $row->id . '" ' . $checked . '>
                         </div>
                     ';
                 })
@@ -58,32 +60,40 @@ class UserSkillController extends Controller
                     return timeAgo($row->created_at);
                 })
                 ->addColumn('action', function ($row) {
-                    $editUrl = route('skills.edit', $row->id);
-                   
+                    $editId = $row->id;
+                    $deleteUrl = route('skills.destroy', $row->id);
 
                     return '
-                        <div class="dropdown ms-auto">
-                            <a href="javascript:;" class="dropdown-toggle-nocaret more-options dropdown-toggle"
-                               data-bs-toggle="dropdown">
-                                <i class="bx bx-dots-vertical-rounded"></i>
-                            </a>
-                            <ul class="dropdown-menu">
-                                <li><a class="dropdown-item" 
-                                        href="'.$editUrl.'">
-                                       <i class="bx bxs-edit"></i> Edit
-                                    </a>
-                                </li>
-                                <li>
-                                    <a class="dropdown-item btn-delete delete-item"
-                                       href="javascript:;"  
-                                       data-id="' . $row->id . '" 
-                                       data-table="skillsTable"
-                                       data-url="' . route('skills.destroy', $row->id) . '">
-                                       <i class="bx bx-trash"></i> Delete
-                                    </a>
-                                </li>
-                            </ul>
-                        </div>';
+        <div class="dropdown dropstart">
+            <a class="btn btn-icon btn-ghost btn-sm rounded-circle"
+                href="#!"
+                role="button"
+                data-bs-toggle="dropdown"
+                aria-haspopup="true"
+                aria-expanded="false">
+                <i class="fa fa-ellipsis-v" aria-hidden="true"></i>
+            </a>
+
+            <div class="dropdown-menu">
+                <!-- Edit Button -->
+                <a class="dropdown-item d-flex align-items-center edit-item" 
+                    href="javascript:void(0)" 
+                    data-id="' . $editId . '">
+                    <i class="fa fa-edit me-2" aria-hidden="true"></i> Edit
+                </a>
+
+                <!-- Delete Button -->
+                <a class="dropdown-item d-flex align-items-center text-danger delete-item" 
+                    href="javascript:void(0)" 
+                    data-title="Delete Skill"
+                    data-content="Are you sure you want to delete this skill?"
+                    data-action="' . $deleteUrl . '"
+                    data-table-id="skillsTable">
+                    <i class="fa fa-trash-o me-2" aria-hidden="true"></i> Delete
+                </a>
+            </div>
+        </div>
+    ';
                 })
                 ->rawColumns(['created_at', 'action', 'status'])
                 ->make(true);
@@ -101,12 +111,12 @@ class UserSkillController extends Controller
     {
         try {
             $data = $request->validated();
-            $data['user_id'] = Auth::id();
+            $data['user_id'] = $this->userId;
 
             $this->skillService->create($data);
 
-            flash()->success('Skill created successfully!');
-            return redirect()->route('skills.index');
+            // flash()->success('Skill created successfully!');
+            return $this->successResponse("Skill created successfully!");
         } catch (Exception $e) {
             Log::error('Skill creation failed', [
                 'message' => $e->getMessage(),
@@ -115,14 +125,30 @@ class UserSkillController extends Controller
                 'request_data' => $request->all(),
             ]);
 
-            flash()->error('An error occurred while creating the skill. Please try again.');
-            return redirect()->back()->withInput();
+            // flash()->error('An error occurred while creating the skill. Please try again.');
+            return $this->errorResponse("An error occurred while creating the skill. Please try again.", 'ERROR', Response::HTTP_UNPROCESSABLE_ENTITY, new \stdClass());
         }
     }
 
     public function edit(UserSkill $skill)
     {
-        return view('portal.skills.edit', compact('skill'));
+        try {
+            return $this->successResponse("Skill fetched successfully!", $skill);
+        } catch (Exception $e) {
+            Log::error('Skill fetch failed', [
+                'message' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                // Removed 'request_data' because $request is not available here
+            ]);
+
+            return $this->errorResponse(
+                "An error occurred while fetching the skill. Please try again.",
+                'ERROR',
+                Response::HTTP_UNPROCESSABLE_ENTITY,
+                new \stdClass()
+            );
+        }
     }
 
     public function update(StoreUserSkillRequest $request, UserSkill $skill)
@@ -130,9 +156,7 @@ class UserSkillController extends Controller
         try {
             $data = $request->validated();
             $this->skillService->update($skill, $data);
-
-            flash()->success('Skill updated successfully!');
-            return redirect()->route('skills.index');
+            return $this->successResponse("Skill updated successfully!");
         } catch (Exception $e) {
             Log::error('Skill update failed', [
                 'message' => $e->getMessage(),
@@ -140,9 +164,7 @@ class UserSkillController extends Controller
                 'line' => $e->getLine(),
                 'request_data' => $request->all(),
             ]);
-
-            flash()->error('An error occurred while updating the skill. Please try again.');
-            return redirect()->back()->withInput();
+            return $this->errorResponse("An error occurred while updating the skill. Please try again.", 'ERROR', Response::HTTP_UNPROCESSABLE_ENTITY, new \stdClass());
         }
     }
 
@@ -151,7 +173,7 @@ class UserSkillController extends Controller
         try {
             $skill = $this->skillService->find($id);
             if (!$skill) {
-                return $this->errorResponse("Skill not found.", ErrorType::NOT_FOUND, Response::HTTP_NOT_FOUND);
+                return $this->errorResponse("Skill not found.","ERROR", Response::HTTP_NOT_FOUND);
             }
 
             $this->skillService->delete($skill);
@@ -166,7 +188,7 @@ class UserSkillController extends Controller
                 'stack' => $e->getTraceAsString(), // optional for deeper debugging
             ]);
 
-            return $this->errorResponse("Something went wrong while deleting the skill.", ErrorType::INTERNAL_SERVER_ERROR, Response::HTTP_INTERNAL_SERVER_ERROR);
+            return $this->errorResponse("Something went wrong while deleting the skill.", "ERROR", Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -220,7 +242,6 @@ class UserSkillController extends Controller
             $skill->status = $validated['status'];
             $skill->save();
             return $this->successResponse("Skill status updated successfully.");
-
         } catch (\Exception $e) {
             // Step 3: Log Error Details
             Log::error('Skill update failed', [

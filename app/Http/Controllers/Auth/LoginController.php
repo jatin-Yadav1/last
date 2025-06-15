@@ -21,7 +21,7 @@ class LoginController extends Controller
         if (Auth::attempt($credentials, $remember)) {
             $user = Auth::user();
             flash()->success('Welcome back, ' . $user->username . '! You have successfully logged in.');
-            return $this->successResponse("Welcome back " . $user->username . "! You have successfully logged in.", $user, route('dashboard'));
+            return $this->successResponse("Welcome back " . $user->username . "! You have successfully logged in.", $user, route('portal.dashboard'));
             // return redirect()->route('portal.dashboard');
         }
         return $this->errorResponse("Login failed. Please check your credentials and try again.", 'ERROR', Response::HTTP_UNPROCESSABLE_ENTITY, new \stdClass());

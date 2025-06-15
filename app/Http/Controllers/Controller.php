@@ -11,12 +11,12 @@ abstract class Controller
         $response['status'] = true;
         $response['message'] = $message;
         $response['data'] = $data;
-        if (!empty($paginate)) {
-            $response['total'] = $paginate->total();
-            $response['totalPage'] = $paginate->lastPage();
-            $response['currentPage'] = $paginate->currentPage();
-            $response['perPage'] = $paginate->perPage();
-        }
+        // if (!empty($paginate)) {
+        //     $response['total'] = $paginate->total();
+        //     $response['totalPage'] = $paginate->lastPage();
+        //     $response['currentPage'] = $paginate->currentPage();
+        //     $response['perPage'] = $paginate->perPage();
+        // }
         return response()->json($response, Response::HTTP_OK);
     }
 
