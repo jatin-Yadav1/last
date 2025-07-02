@@ -43,6 +43,7 @@ class HomeController extends Controller
 
     public function service(Request $request)
     {
+        // dd($this->getSkills());
         return view('home.service.index');
     }
 
@@ -54,5 +55,13 @@ class HomeController extends Controller
     private function getUserData($userId)
     {
         return User::find($userId);
+    }
+
+    public function getSkills()
+    {
+         // Load JSON from config directory
+        $json = file_get_contents(config_path('skills.json'));
+        $skills = json_decode($json, true);
+        return $skills;
     }
 }
