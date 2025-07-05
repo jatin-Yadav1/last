@@ -20,10 +20,11 @@ use App\Http\Controllers\Portal\UserExperienceController;
 use App\Http\Controllers\Portal\UserSkillController;
 use App\Http\Controllers\PortfolioController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\Crud\curdcontroller;
 
-// Route::get('/coming-soon', function () {
-//     return view('coming-soon');
-// });
+Route::get('/coming-soon', function () {
+    return view('coming-soon');
+});
 
 Route::get('/', [HomeController::class, 'index'])->name('home.index');
 Route::get('about', [HomeController::class, 'about'])->name('home.about');
@@ -82,11 +83,17 @@ Route::middleware(['auth'])->prefix('portal')->group(function () {
 
     Route::resource('skills', UserSkillController::class);
     Route::post('skill-update', [UserSkillController::class, 'ajaxUpdate'])->name('skill.ajax.update');
-    // Route::post('/skill/status-update', [UserSkillController::class, 'ajaxUpdateStatus'])->name('skill.ajax.update');
+    Route::post('/skill/status-update', [UserSkillController::class, 'ajaxUpdateStatus'])->name('skill.ajax.update');
 
 
     Route::resource('educations', UserEducationController::class);
     Route::resource('experiences', UserExperienceController::class);
 
     Route::get('logout', [LogoutController::class, 'perform'])->name('logout');
+    Route::get('/get', [curdcontroller::class, 'index'])->name('/get');
+    Route::post('/get2', [curdcontroller::class, 'Add'])->name('/get2');
+    Route::get('show',[curdcontroller::class,'show']);
+    Route::get('update/{id}',[curdcontroller::class,'update'])->name('portal.update');
+    Route::get('delete/{id}',[curdcontroller::class,'delete']);
+
 });

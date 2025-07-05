@@ -12,6 +12,8 @@ class HomeController extends Controller
     public function __construct()
     {
         $this->userId = user_id();
+
+        
     }
 
     public function index(Request $request)

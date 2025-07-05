@@ -24,7 +24,7 @@
     </div>
     <div class="image">
         
-        <img draggable="false" class="tilt" src="{{$user->image}}" alt="">
+        <img draggable="false" class="tilt" src="" alt="">
     </div>
 </section>
 @endsection

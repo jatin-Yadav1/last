@@ -76,6 +76,13 @@
                         <li class="nav-item"><a href="../docs/changelog.html" class="nav-link ">Changelog</a></li>
                     </ul>
                 </div>
+
+            </li>
+             <li class="nav-item">
+                <a class="nav-link has-arrow " href="show">
+                    <i data-feather="message-square" class="nav-icon me-2 icon-xxs"></i>
+                    Educations
+                </a>
             </li>
         </ul>
     </div>
